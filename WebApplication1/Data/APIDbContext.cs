@@ -10,6 +10,6 @@ namespace WebApplication1.Data
 
         }
 
-        public DbSet<MedicalRecords> MedicalRecords { get; set; }
+        public DbSet<User> User { get; set; }
     }
 }

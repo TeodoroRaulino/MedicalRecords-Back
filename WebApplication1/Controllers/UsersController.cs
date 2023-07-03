@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ namespace WebApplication1.Controllers
 
         // GET: api/Users
         [HttpGet]
+        [Authorize(Roles = "Doctor")]
         public async Task<ActionResult<IEnumerable<User>>> GetUser()
         {
           if (_context.User == null)
@@ -34,6 +36,7 @@ namespace WebApplication1.Controllers
 
         // GET: api/Users/5
         [HttpGet("{id}")]
+        [Authorize(Roles = "Doctor")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
           if (_context.User == null)
@@ -53,6 +56,7 @@ namespace WebApplication1.Controllers
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> PutUser(int id, User user)
         {
             if (id != user.Id)
@@ -84,12 +88,16 @@ namespace WebApplication1.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
+        [Authorize(Roles = "Doctor")]
         public async Task<ActionResult<User>> PostUser(User user)
         {
           if (_context.User == null)
           {
               return Problem("Entity set 'APIDbContext.User'  is null.");
           }
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+
             _context.User.Add(user);
             await _context.SaveChangesAsync();
 
@@ -98,6 +106,7 @@ namespace WebApplication1.Controllers
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Doctor")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             if (_context.User == null)

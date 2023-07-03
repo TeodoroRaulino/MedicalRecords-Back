@@ -14,7 +14,7 @@ namespace WebApplication1.Models
         [Required(ErrorMessage = "A senha é obrigatória.")]
         public string Password { get; set; }
 
-        [Required(ErrorMessage = "O nome é obrigatório.")]
+        [Required(ErrorMessage = "O nome completo do usuário é obrigatório.")]
         [StringLength(200, MinimumLength = 4, ErrorMessage = "O nome deve ter entre 4 e 200 caracteres.")]
         public string Name { get; set; }
 

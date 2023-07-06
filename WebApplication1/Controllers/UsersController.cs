@@ -11,7 +11,7 @@ using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/users")]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -57,7 +57,7 @@ namespace WebApplication1.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<IActionResult> PutUser(int id,[FromBody] User user)
         {
             if (id != user.Id)
             {
@@ -82,14 +82,14 @@ namespace WebApplication1.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok("Usuário editado com sucesso.");
         }
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "Doctor")]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<User>> PostUser([FromBody] User user)
         {
           if (_context.User == null)
           {
@@ -101,7 +101,13 @@ namespace WebApplication1.Controllers
             _context.User.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
+            var response = new
+            {
+                id = user.Id,
+                message = "Usuário criado com sucesso."
+            };
+
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, response);
         }
 
         // DELETE: api/Users/5

@@ -21,6 +21,13 @@ namespace WebApplication1.Data
 
             modelBuilder.Entity<Address>().HasNoKey();
 
+            modelBuilder.Entity<MedicalRecords>()
+                .HasOne(mr => mr.User)
+                .WithOne()
+                .HasForeignKey<MedicalRecords>(mr => mr.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
             base.OnModelCreating(modelBuilder);
         }
 

@@ -25,6 +25,11 @@ namespace WebApplication1.Models
 
         [NotMapped]
         public Address? Address { get; set; }
+
+        [ForeignKey("User")]
+        public int UserId { get; set; }
+        public User User { get; set; }
+
     }
 
     public class Address

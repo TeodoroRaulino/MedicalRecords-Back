@@ -20,5 +20,6 @@ namespace WebApplication1.Models
 
         [Required(ErrorMessage = "O tipo de usuário é obrigatório.")]
         public UserRole Role { get; set; }
+
     }
 }

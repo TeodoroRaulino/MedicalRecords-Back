@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Data;
+using WebApplication1.DTOs;
 using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
@@ -27,11 +29,19 @@ namespace WebApplication1.Controllers
         [Authorize(Roles = "Doctor")]
         public async Task<ActionResult<IEnumerable<User>>> GetUser()
         {
-          if (_context.User == null)
-          {
-              return NotFound();
-          }
-            return await _context.User.ToListAsync();
+            try
+            {
+                if (_context.User == null)
+                {
+                    return NotFound();
+                }
+
+                return await _context.User.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocorreu um erro ao recuperar os usuários.");
+            }
         }
 
         // GET: api/Users/5
@@ -39,19 +49,28 @@ namespace WebApplication1.Controllers
         [Authorize(Roles = "Doctor")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
-          if (_context.User == null)
-          {
-              return NotFound();
-          }
-            var user = await _context.User.FindAsync(id);
-
-            if (user == null)
+            try
             {
-                return NotFound();
-            }
+                if (_context.User == null)
+                {
+                    return NotFound();
+                }
 
-            return user;
+                var user = await _context.User.FindAsync(id);
+
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocorreu um erro ao recuperar o usuário.");
+            }
         }
+
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
@@ -129,6 +148,31 @@ namespace WebApplication1.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpGet("dashboard")]
+        [Authorize(Roles = "Doctor")]
+        public ActionResult<DashboardInfoDTO> GetDashboardInfo()
+        {
+            try
+            {
+                var totalDoctors = _context.User.Count(u => u.Role == Enums.UserRole.Doctor);
+                var totalPatients = _context.User.Count(u => u.Role == Enums.UserRole.Patient);
+                var totalMedicalRecords = _context.MedicalRecords.Count();
+
+                var dashboardInfo = new DashboardInfoDTO
+                {
+                    TotalDoctors = totalDoctors,
+                    TotalPatients = totalPatients,
+                    TotalMedicalRecords = totalMedicalRecords
+                };
+
+                return Ok(dashboardInfo);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Ocorreu um erro ao recuperar as informações do dashboard.");
+            }
         }
 
         private bool UserExists(int id)

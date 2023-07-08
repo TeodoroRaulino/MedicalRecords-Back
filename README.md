@@ -6,7 +6,11 @@ A aplicação de Ficha Médica tem como objetivo fornecer uma plataforma para pa
 - Médicos têm permissões para criar, ler, atualizar e excluir fichas médicas.
 - Autenticação.
   
-## Tecnologias Utilizadas
+## Libs/Ferramentas
 - ASP.NET Core .
 - EF Core.
 - MySql.
+
+## Frontend
+
+Está aplicação está utilizando [MedicalRecords-Front](https://github.com/TeodoroRaulino/MedicalRecords-Front) como frontend.

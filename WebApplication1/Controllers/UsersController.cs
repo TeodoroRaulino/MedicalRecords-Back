@@ -130,24 +130,32 @@ namespace WebApplication1.Controllers
         }
 
         // DELETE: api/Users/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{userId}")]
         [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(int userId)
         {
-            if (_context.User == null)
+            try
             {
-                return NotFound();
+                var user = await _context.User.FindAsync(userId);
+
+                if (user == null)
+                {
+                    return NotFound();
+                }
+
+                var medicalRecords = await _context.MedicalRecords.Where(mr => mr.UserId == userId).ToListAsync();
+
+                _context.User.Remove(user);
+                _context.MedicalRecords.RemoveRange(medicalRecords);
+
+                await _context.SaveChangesAsync();
+
+                return NoContent();
             }
-            var user = await _context.User.FindAsync(id);
-            if (user == null)
+            catch (Exception ex)
             {
-                return NotFound();
+                return StatusCode(500, "Ocorreu um erro ao excluir o usuário e as fichas médicas associadas.");
             }
-
-            _context.User.Remove(user);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
 
         [HttpGet("dashboard")]

@@ -129,21 +129,40 @@ namespace WebApplication1.Controllers
             }
         }
 
-
         [HttpGet("{id}")]
         [Authorize(Roles = "Doctor")]
-        public async Task<ActionResult<MedicalRecords>> GetMedicalRecords(int id)
+        public async Task<ActionResult<MedicalRecordsDTO>> GetMedicalRecords(int id)
         {
             try
             {
-                var medicalRecords = await _context.MedicalRecords.FirstOrDefaultAsync(m => m.Id == id);
+                var medicalRecord = await _context.MedicalRecords.FindAsync(id);
 
-                if (medicalRecords == null)
+                if (medicalRecord == null)
                 {
                     return NotFound();
                 }
 
-                return Ok(medicalRecords);
+                var address = medicalRecord.Address;
+                var addressDTO = address != null ? new AddressDTO
+                {
+                    Street = address.Street,
+                    Neighborhood = address.Neighborhood,
+                    City = address.City,
+                    State = address.State,
+                    PostalCode = address.PostalCode
+                } : null;
+
+                var medicalRecordDTO = new MedicalRecordsDTO
+                {
+                    PhotoPath = medicalRecord.PhotoPath,
+                    FullName = medicalRecord.FullName,
+                    CPF = medicalRecord.CPF,
+                    PhoneNumber = medicalRecord.PhoneNumber,
+                    Address = addressDTO,
+                    UserId = medicalRecord.UserId
+                };
+
+                return Ok(medicalRecordDTO);
             }
             catch (Exception ex)
             {
@@ -153,7 +172,7 @@ namespace WebApplication1.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Doctor")]
-        public async Task<IActionResult> UpdateMedicalRecords(int id, [FromForm] int userId)
+        public async Task<IActionResult> UpdateMedicalRecords(int id, [FromForm] MedicalRecordsDTO updatedMedicalRecordsDTO)
         {
             try
             {
@@ -163,13 +182,45 @@ namespace WebApplication1.Controllers
                     return NotFound();
                 }
 
-                var existingUser = await _context.User.FindAsync(userId);
+                var existingUser = await _context.User.FindAsync(updatedMedicalRecordsDTO.UserId);
                 if (existingUser == null)
                 {
                     return BadRequest("Usuário não encontrado");
                 }
 
+                existingMedicalRecords.FullName = updatedMedicalRecordsDTO.FullName;
+                existingMedicalRecords.CPF = updatedMedicalRecordsDTO.CPF;
+                existingMedicalRecords.PhoneNumber = updatedMedicalRecordsDTO.PhoneNumber;
                 existingMedicalRecords.UserId = existingUser.Id;
+
+                if (updatedMedicalRecordsDTO.Address != null)
+                {
+                    if (existingMedicalRecords.Address == null)
+                    {
+                        existingMedicalRecords.Address = new Address();
+                    }
+
+                    existingMedicalRecords.Address.Street = updatedMedicalRecordsDTO.Address.Street;
+                    existingMedicalRecords.Address.Neighborhood = updatedMedicalRecordsDTO.Address.Neighborhood;
+                    existingMedicalRecords.Address.City = updatedMedicalRecordsDTO.Address.City;
+                    existingMedicalRecords.Address.State = updatedMedicalRecordsDTO.Address.State;
+                    existingMedicalRecords.Address.PostalCode = updatedMedicalRecordsDTO.Address.PostalCode;
+                }
+                else
+                {
+                    existingMedicalRecords.Address = null;
+                }
+
+                if (updatedMedicalRecordsDTO.Photo != null)
+                {
+                    string path = Path.Combine("D:\\Vscode\\medical\\WebApplication1\\WebApplication1\\Images\\", updatedMedicalRecordsDTO.PhotoPath);
+                    using (Stream stream = new FileStream(path, FileMode.Create))
+                    {
+                        await updatedMedicalRecordsDTO.Photo.CopyToAsync(stream);
+                    }
+
+                    existingMedicalRecords.PhotoPath = updatedMedicalRecordsDTO.PhotoPath;
+                }
 
                 await _context.SaveChangesAsync();
 
@@ -180,9 +231,6 @@ namespace WebApplication1.Controllers
                 return StatusCode(500, "Ocorreu um erro ao atualizar o registro médico.");
             }
         }
-
-
-
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Doctor")]

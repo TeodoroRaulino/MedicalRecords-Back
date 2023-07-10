@@ -57,7 +57,10 @@ namespace WebApplication1.Controllers
 
                 foreach (var item in medicalRecordsDTOs)
                 {
-                    var fileInfo = new FileInfo(Path.Combine("D:\\Vscode\\medical\\WebApplication1\\WebApplication1\\Images\\", item.PhotoPath));
+                    string AssemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location).ToString();
+                    string PathDefault = AssemblyPath.Replace("\\bin\\Debug\\net6.0", "\\images\\");
+
+                    var fileInfo = new FileInfo(Path.Combine(PathDefault, item.PhotoPath));
                     var data = new byte[fileInfo.Length];
                     using (FileStream fs = fileInfo.OpenRead())
                     {
@@ -87,7 +90,10 @@ namespace WebApplication1.Controllers
                     return Problem("Entity set 'APIDbContext.MedicalRecords' is null.");
                 }
 
-                string path = Path.Combine("D:\\Vscode\\medical\\WebApplication1\\WebApplication1\\Images\\", medicalRecordsDTO.PhotoPath);
+                string AssemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location).ToString();
+                string PathDefault = AssemblyPath.Replace("\\bin\\Debug\\net6.0", "\\images\\");
+
+                string path = Path.Combine(PathDefault, medicalRecordsDTO.PhotoPath);
                 using (Stream stream = new FileStream(path, FileMode.Create))
                 {
                     await medicalRecordsDTO.Photo.CopyToAsync(stream);
@@ -213,7 +219,10 @@ namespace WebApplication1.Controllers
 
                 if (updatedMedicalRecordsDTO.Photo != null)
                 {
-                    string path = Path.Combine("D:\\Vscode\\medical\\WebApplication1\\WebApplication1\\Images\\", updatedMedicalRecordsDTO.PhotoPath);
+                    string AssemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location).ToString();
+                    string PathDefault = AssemblyPath.Replace("\\bin\\Debug\\net6.0", "\\images\\");
+
+                    string path = Path.Combine(PathDefault, updatedMedicalRecordsDTO.PhotoPath);
                     using (Stream stream = new FileStream(path, FileMode.Create))
                     {
                         await updatedMedicalRecordsDTO.Photo.CopyToAsync(stream);
@@ -301,7 +310,10 @@ namespace WebApplication1.Controllers
                     PostalCode = address.PostalCode
                 } : null;
 
-                var imagePath = Path.Combine("D:\\Vscode\\medical\\WebApplication1\\WebApplication1\\Images\\", medicalRecord.PhotoPath);
+                string AssemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location).ToString();
+                string PathDefault = AssemblyPath.Replace("\\bin\\Debug\\net6.0", "\\images\\");
+
+                var imagePath = Path.Combine(PathDefault, medicalRecord.PhotoPath);
                 var fileInfo = new FileInfo(imagePath);
                 var data = new byte[fileInfo.Length];
 

@@ -62,8 +62,7 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-
-var key = Encoding.ASCII.GetBytes(Settings.Secret);
+var key = Encoding.ASCII.GetBytes(builder.Configuration.GetSection("TokenConfigurations:SecretJwtKey").Value);
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

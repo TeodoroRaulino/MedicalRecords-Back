@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using WebApplication1.Data;
 using WebApplication1.DTOs;
-using WebApplication1.Migrations;
 using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
@@ -33,16 +34,6 @@ namespace WebApplication1.Controllers
 
                 var medicalRecordsDTOs = medicalRecords.Select(item =>
                 {
-                    var address = item.Address;
-                    var addressDTO = address != null ? new AddressDTO
-                    {
-                        Street = address.Street,
-                        Neighborhood = address.Neighborhood,
-                        City = address.City,
-                        State = address.State,
-                        PostalCode = address.PostalCode
-                    } : null;
-
                     return new GetMedicalRecordsDTO
                     {
                         Id = item.Id,
@@ -50,17 +41,19 @@ namespace WebApplication1.Controllers
                         FullName = item.FullName,
                         CPF = item.CPF,
                         PhoneNumber = item.PhoneNumber,
-                        Address = addressDTO,
+                        Street = item.Street,
+                        Neighborhood = item.Neighborhood,
+                        City = item.City,
+                        State = item.State,
+                        PostalCode = item.PostalCode,
                         UserId = item.UserId
                     };
                 }).ToList();
 
                 foreach (var item in medicalRecordsDTOs)
                 {
-                    string AssemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location).ToString();
-                    string PathDefault = AssemblyPath.Replace("\\bin\\Debug\\net6.0", "\\images\\");
-
-                    var fileInfo = new FileInfo(Path.Combine(PathDefault, item.PhotoPath));
+                    string imagePath = GetImagePath(item.PhotoPath);
+                    var fileInfo = new FileInfo(imagePath);
                     var data = new byte[fileInfo.Length];
                     using (FileStream fs = fileInfo.OpenRead())
                     {
@@ -77,7 +70,6 @@ namespace WebApplication1.Controllers
                 return StatusCode(500, "Ocorreu um erro ao recuperar os registros médicos.");
             }
         }
-
 
         [HttpPost]
         [Authorize(Roles = "Doctor")]
@@ -104,15 +96,6 @@ namespace WebApplication1.Controllers
                 {
                     return BadRequest("Usuário não encontrado");
                 }
-                var address = new Address();
-                if (medicalRecordsDTO.Address != null)
-                {
-                    address.Street = medicalRecordsDTO.Address.Street;
-                    address.Neighborhood = medicalRecordsDTO.Address.Neighborhood;
-                    address.City = medicalRecordsDTO.Address.City;
-                    address.State = medicalRecordsDTO.Address.State;
-                    address.PostalCode = medicalRecordsDTO.Address.PostalCode;
-                }
 
                 var medicalRecords = new MedicalRecords
                 {
@@ -120,7 +103,11 @@ namespace WebApplication1.Controllers
                     FullName = medicalRecordsDTO.FullName,
                     CPF = medicalRecordsDTO.CPF,
                     PhoneNumber = medicalRecordsDTO.PhoneNumber,
-                    Address = address,
+                    Street = medicalRecordsDTO.Street,
+                    Neighborhood = medicalRecordsDTO.Neighborhood,
+                    City = medicalRecordsDTO.City,
+                    State = medicalRecordsDTO.State,
+                    PostalCode = medicalRecordsDTO.PostalCode,
                     UserId = user.Id
                 };
 
@@ -148,23 +135,17 @@ namespace WebApplication1.Controllers
                     return NotFound();
                 }
 
-                var address = medicalRecord.Address;
-                var addressDTO = address != null ? new AddressDTO
-                {
-                    Street = address.Street,
-                    Neighborhood = address.Neighborhood,
-                    City = address.City,
-                    State = address.State,
-                    PostalCode = address.PostalCode
-                } : null;
-
                 var medicalRecordDTO = new MedicalRecordsDTO
                 {
                     PhotoPath = medicalRecord.PhotoPath,
                     FullName = medicalRecord.FullName,
                     CPF = medicalRecord.CPF,
                     PhoneNumber = medicalRecord.PhoneNumber,
-                    Address = addressDTO,
+                    Street = medicalRecord.Street,
+                    Neighborhood = medicalRecord.Neighborhood,
+                    City = medicalRecord.City,
+                    State = medicalRecord.State,
+                    PostalCode = medicalRecord.PostalCode,
                     UserId = medicalRecord.UserId
                 };
 
@@ -188,34 +169,14 @@ namespace WebApplication1.Controllers
                     return NotFound();
                 }
 
-                var existingUser = await _context.User.FindAsync(updatedMedicalRecordsDTO.UserId);
-                if (existingUser == null)
-                {
-                    return BadRequest("Usuário não encontrado");
-                }
-
                 existingMedicalRecords.FullName = updatedMedicalRecordsDTO.FullName;
                 existingMedicalRecords.CPF = updatedMedicalRecordsDTO.CPF;
                 existingMedicalRecords.PhoneNumber = updatedMedicalRecordsDTO.PhoneNumber;
-                existingMedicalRecords.UserId = existingUser.Id;
-
-                if (updatedMedicalRecordsDTO.Address != null)
-                {
-                    if (existingMedicalRecords.Address == null)
-                    {
-                        existingMedicalRecords.Address = new Address();
-                    }
-
-                    existingMedicalRecords.Address.Street = updatedMedicalRecordsDTO.Address.Street;
-                    existingMedicalRecords.Address.Neighborhood = updatedMedicalRecordsDTO.Address.Neighborhood;
-                    existingMedicalRecords.Address.City = updatedMedicalRecordsDTO.Address.City;
-                    existingMedicalRecords.Address.State = updatedMedicalRecordsDTO.Address.State;
-                    existingMedicalRecords.Address.PostalCode = updatedMedicalRecordsDTO.Address.PostalCode;
-                }
-                else
-                {
-                    existingMedicalRecords.Address = null;
-                }
+                existingMedicalRecords.Street = updatedMedicalRecordsDTO.Street;
+                existingMedicalRecords.Neighborhood = updatedMedicalRecordsDTO.Neighborhood;
+                existingMedicalRecords.City = updatedMedicalRecordsDTO.City;
+                existingMedicalRecords.State = updatedMedicalRecordsDTO.State;
+                existingMedicalRecords.PostalCode = updatedMedicalRecordsDTO.PostalCode;
 
                 if (updatedMedicalRecordsDTO.Photo != null)
                 {
@@ -251,6 +212,12 @@ namespace WebApplication1.Controllers
                 if (medicalRecords == null)
                 {
                     return NotFound();
+                }
+
+                string imagePath = GetImagePath(medicalRecords.PhotoPath);
+                if (System.IO.File.Exists(imagePath))
+                {
+                    System.IO.File.Delete(imagePath);
                 }
 
                 _context.MedicalRecords.Remove(medicalRecords);
@@ -300,20 +267,22 @@ namespace WebApplication1.Controllers
                     return NotFound();
                 }
 
-                var address = medicalRecord.Address;
-                var addressDTO = address != null ? new AddressDTO
+                var medicalRecordDTO = new GetMedicalRecordsDTO
                 {
-                    Street = address.Street,
-                    Neighborhood = address.Neighborhood,
-                    City = address.City,
-                    State = address.State,
-                    PostalCode = address.PostalCode
-                } : null;
+                    Id = medicalRecord.Id,
+                    PhotoPath = medicalRecord.PhotoPath,
+                    FullName = medicalRecord.FullName,
+                    CPF = medicalRecord.CPF,
+                    PhoneNumber = medicalRecord.PhoneNumber,
+                    Street = medicalRecord.Street,
+                    Neighborhood = medicalRecord.Neighborhood,
+                    City = medicalRecord.City,
+                    State = medicalRecord.State,
+                    PostalCode = medicalRecord.PostalCode,
+                    UserId = medicalRecord.UserId
+                };
 
-                string AssemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location).ToString();
-                string PathDefault = AssemblyPath.Replace("\\bin\\Debug\\net6.0", "\\images\\");
-
-                var imagePath = Path.Combine(PathDefault, medicalRecord.PhotoPath);
+                string imagePath = GetImagePath(medicalRecord.PhotoPath);
                 var fileInfo = new FileInfo(imagePath);
                 var data = new byte[fileInfo.Length];
 
@@ -322,17 +291,7 @@ namespace WebApplication1.Controllers
                     fs.Read(data, 0, data.Length);
                 }
 
-                var medicalRecordDTO = new GetMedicalRecordsDTO
-                {
-                    Id = medicalRecord.Id,
-                    PhotoPath = medicalRecord.PhotoPath,
-                    FullName = medicalRecord.FullName,
-                    CPF = medicalRecord.CPF,
-                    PhoneNumber = medicalRecord.PhoneNumber,
-                    Address = addressDTO,
-                    UserId = medicalRecord.UserId,
-                    Photo = data
-                };
+                medicalRecordDTO.Photo = data;
 
                 return Ok(medicalRecordDTO);
             }
@@ -342,7 +301,12 @@ namespace WebApplication1.Controllers
             }
         }
 
+        private string GetImagePath(string photoPath)
+        {
+            string assemblyPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string pathDefault = assemblyPath.Replace("\\bin\\Debug\\net6.0", "\\images\\");
 
-
+            return Path.Combine(pathDefault, photoPath);
+        }
     }
 }

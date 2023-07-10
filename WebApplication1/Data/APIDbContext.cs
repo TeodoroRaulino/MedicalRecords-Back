@@ -19,7 +19,6 @@ namespace WebApplication1.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            modelBuilder.Entity<Address>().HasNoKey();
 
             modelBuilder.Entity<MedicalRecords>()
                 .HasOne(mr => mr.User)

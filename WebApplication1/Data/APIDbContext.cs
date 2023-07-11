@@ -19,6 +19,8 @@ namespace WebApplication1.Data
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
+            modelBuilder.Seed();
+
 
             modelBuilder.Entity<MedicalRecords>()
                 .HasOne(mr => mr.User)

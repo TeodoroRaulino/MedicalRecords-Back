@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using WebApplication1.Data;
 using WebApplication1.DTOs;
@@ -121,6 +122,7 @@ namespace WebApplication1.Controllers
                 return StatusCode(500, "Ocorreu um erro ao salvar o registro médico.");
             }
         }
+
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Doctor")]

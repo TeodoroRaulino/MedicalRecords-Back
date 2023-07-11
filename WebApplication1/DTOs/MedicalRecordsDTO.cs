@@ -32,7 +32,7 @@ namespace WebApplication1.DTOs
 
         public string? State { get; set; }
 
-        [RegularExpression(@"^\d{5}-\d{3}$", ErrorMessage = "Informe um CEP válido no formato xxxxx-xxx.")]
+        //[RegularExpression(@"^\d{5}-\d{3}$", ErrorMessage = "Informe um CEP válido no formato xxxxx-xxx.")]
         public string? PostalCode { get; set; }
 
         public int UserId { get; set; }

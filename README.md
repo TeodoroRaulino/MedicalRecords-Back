@@ -5,6 +5,7 @@ A aplicação de Ficha Médica tem como objetivo fornecer uma plataforma para pa
 - Pacientes podem visualizar suas fichas médicas.
 - Médicos têm permissões para criar, ler, atualizar e excluir fichas médicas.
 - Autenticação.
+- Faça a primeira migração e atualiza o banco de dados para ser criado um usuário default.
   
 ## Libs/Ferramentas
 - ASP.NET Core .

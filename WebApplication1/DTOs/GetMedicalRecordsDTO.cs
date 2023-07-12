@@ -19,7 +19,7 @@ namespace WebApplication1.DTOs
         public string CPF { get; set; }
 
         [Required(ErrorMessage = "O número de celular do paciente é obrigatório.")]
-        [RegularExpression(@"^\+[1-9]\d{1,14}$", ErrorMessage = "Informe um número de celular válido.")]
+        [RegularExpression(@"^\+\d{2} \d{2} \d{5}-\d{4}$", ErrorMessage = "Informe um número de celular válido.")]
         public string PhoneNumber { get; set; }
 
         public string? Street { get; set; }
@@ -27,10 +27,10 @@ namespace WebApplication1.DTOs
         public string? Neighborhood { get; set; }
 
         public string? City { get; set; }
-
+        s
         public string? State { get; set; }
 
-        //[RegularExpression(@"^\d{5}-\d{3}$", ErrorMessage = "Informe um CEP válido no formato xxxxx-xxx.")]
+        [RegularExpression(@"^\d{5}-\d{3}$", ErrorMessage = "Informe um CEP válido no formato xxxxx-xxx.")]
         public string? PostalCode { get; set; }
 
         public int UserId { get; set; }
